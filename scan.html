@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  
+  <style>
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eef1f9, #e3e9ff);
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.70);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    animation: fadeIn 0.8s ease;
+}
+
+header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.logo-container {
+    margin-bottom: 20px;
+}
+
+.school-logo {
+    width: 90px;
+    height: auto;
+    border-radius: 80%;
+    transition: 0.3s ease;
+}
+
+.school-logo:hover {
+    transform: scale(1.07);
+}
+
+h1 {
+    color: #007bff;
+    font-size: 1.9em;
+    margin: 5px 0;
+}
+
+h2 {
+    color: #555;
+    font-size: 1.0em;
+    margin: 0 0 15px;
+}
+
+#reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto 20px;
+    border: 3px dashed #007bff;
+    border-radius: 10px;
+    min-height: 250px;
+    overflow: hidden;
+    animation: glow 2s infinite ease-in-out;
+}
+
+#status-area {
+    margin-top: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.result-box {
+    padding: 15px;
+    font-weight: bold;
+    border-radius: 6px;
+    min-height: 10px;
+    text-align: left;
+    word-wrap: break-word;
+    transition: 0.25s ease;
+}
+
+.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+.error   { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+.checkmark {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 120px;
+    height: 120px;
+    background: #28a745;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 70px;
+    opacity: 0;
+    transition: 0.4s ease-out;
+}
+
+.checkmark.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+  </style>
+</head>
+
+<body>
+
+<div class="checkmark" id="checkmark">✓</div>
+
+<div class="container">
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" class="school-logo">
+        </div>
+        <h1>Presensi Berbasis QR Code</h1>
+        <h2>SMK Negeri 2 Purwodadi</h2>
+    </header>
+
+    <main>
+        <section id="scanner-area">
+            <h3>Arahkan QR Code ke Kamera Depan!</h3>
+            <div id="reader"></div> 
+        </section>
+
+        <section id="status-area">
+            <p class="status-message">Status Scan Code QR:</p>
+            <div id="scan-result" class="result-box"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 | Sistem Informasi Sekolah</p>
+    </footer>
+</div>
+
+</body>
+
+<script>
+const URL = "https://script.google.com/macros/s/AKfycbz6tPVHvwCUhaVsqc1WwLH86HfR35-slYgOSUSGX9sJIVrLJX8VtCxRYNxFZy5ViBQazQ/exec";
+
+let cooldown = 2000;
+let lastTime = 0;
+
+function onScanSuccess(decodedText) {
+    const now = Date.now();
+    if (now - lastTime < cooldown) return;
+    lastTime = now;
+
+    console.log("SCAN:", decodedText);
+
+    new Audio("beep.mp3").play();
+
+    fetch(URL + "?kode=" + decodedText);
+
+    const box = document.getElementById("scan-result");
+    box.classList.remove("error");
+    box.classList.add("success");
+    box.innerHTML = `<div>Status : Scan Berhasil!</div>`;
+}
+
+const html5QrCode = new Html5Qrcode("reader");
+
+// 👇 KAMERA DEPAN
+html5QrCode.start(
+  { facingMode: "user" },
+  { fps: 20, qrbox: 230 },
+  onScanSuccess
+);
+</script>
+
+</html>
